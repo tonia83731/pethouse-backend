@@ -40,6 +40,12 @@ const adminFurkidController = {
         include: [Partner],
       });
 
+      if (!furkid)
+        return res.status(404).json({
+          success: false,
+          message: "Furkid no found",
+        });
+
       let furkid_data = {
         ...furkid,
         partnerName: furkid.Partner.name,
@@ -120,8 +126,102 @@ const adminFurkidController = {
       console.log(error);
     }
   },
-  updateFurkid: async (req, res, next) => {},
-  deleteFurkid: async (req, res, next) => {},
+  updateFurkid: async (req, res, next) => {
+    try {
+      const { furkidId } = req.params;
+      const {
+        name,
+        gender,
+        animal,
+        size,
+        age,
+        partnerId,
+        isNeutured,
+        isVaccinated,
+      } = req.body;
+      const furkid = await Furkid.findByPk(furkidId);
+
+      if (!furkid)
+        return res.status(404).json({
+          success: false,
+          message: "Furkid no found",
+        });
+
+      if (name && name.trim() === "") {
+        return res.status(400).json({
+          success: false,
+          message: "Name cannot be blank",
+        });
+      }
+      if (gender && !animalGender.includes(gender)) {
+        return res.status(400).json({
+          success: false,
+          message: "Invalid gender value",
+        });
+      }
+      if (animal && !animalType.includes(animal)) {
+        return res.status(400).json({
+          success: false,
+          message: "Invalid animal type value",
+        });
+      }
+      if (size && !animalSize.includes(size)) {
+        return res.status(400).json({
+          success: false,
+          message: "Invalid size value",
+        });
+      }
+      if (age && !animalAge.includes(age)) {
+        return res.status(400).json({
+          success: false,
+          message: "Invalid age value",
+        });
+      }
+      if (partnerId === "") {
+        return res.status(400).json({
+          success: false,
+          message: "PartnerId cannot be blank",
+        });
+      }
+
+      const updated_furkid = await furkid.update({
+        name: name || furkid.name,
+        gender: gender || furkid.gender,
+        animal: animal || furkid.animal,
+        size: size || furkid.size,
+        age: age || furkid.age,
+        partnerId: partnerId || furkid.partnerId,
+        isNeutured: isNeutured || furkid.isNeutured,
+        isVaccinated: isVaccinated || furkid.isVaccinated,
+      });
+      return res.status(200).json({
+        success: true,
+        message: "Furkid update successfully",
+        data: updated_furkid,
+      });
+    } catch (error) {
+      console.log(error);
+    }
+  },
+  deleteFurkid: async (req, res, next) => {
+    try {
+      const { furkidId } = req.params;
+      const furkid = await Furkid.findByPk(furkidId);
+
+      if (!furkid)
+        return res.status(404).json({
+          success: false,
+          message: "Furkid no found",
+        });
+      await furkid.destroy();
+      return res.status(200).json({
+        success: true,
+        message: "Furkid delete successfully",
+      });
+    } catch (error) {
+      console.log(error);
+    }
+  },
 };
 
 module.exports = adminFurkidController;

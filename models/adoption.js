@@ -23,6 +23,7 @@ module.exports = (sequelize, DataTypes) => {
       acceptTraining: DataTypes.BOOLEAN,
       aloneHour: DataTypes.INTEGER,
       reason: DataTypes.TEXT,
+      status: DataTypes.STRING,
     },
     {
       modelName: "Adoption",
