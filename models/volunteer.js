@@ -3,12 +3,13 @@ module.exports = (sequelize, DataTypes) => {
   const Volunteer = sequelize.define(
     "Volunteer",
     {
-      organizationId: DataTypes.INTEGER,
-      volunteerNumber: DataTypes.INTEGER,
-      startDate: DataTypes.DATE,
-      endDate: DataTypes.DATE,
-      introduction: DataTypes.TEXT,
-      minWorkHrs: DataTypes.INTEGER,
+      findVolunteerId: DataTypes.INTEGER,
+      name: DataTypes.STRING,
+      phone: DataTypes.STRING,
+      email: DataTypes.STRING,
+      date: DataTypes.DATE,
+      hours: DataTypes.INTEGER,
+      needProven: DataTypes.BOOLEAN,
     },
     {
       modelName: "Volunteer",
@@ -18,8 +19,8 @@ module.exports = (sequelize, DataTypes) => {
   );
   Volunteer.associate = function (models) {
     // associations can be defined here
-    Volunteer.belongsTo(models.Organization, {
-      foreignKey: "organizationId",
+    Volunteer.belongsTo(models.FindVolunteer, {
+      foreignKey: "findVolunteerId",
     });
   };
   return Volunteer;

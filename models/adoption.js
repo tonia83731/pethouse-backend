@@ -3,16 +3,26 @@ module.exports = (sequelize, DataTypes) => {
   const Adoption = sequelize.define(
     "Adoption",
     {
-      image: DataTypes.STRING,
-      amimalTypeId: DataTypes.INTEGER,
-      aminalBreedId: DataTypes.INTEGER,
-      aminalGenderId: DataTypes.INTEGER,
-      aminalSizeId: DataTypes.INTEGER,
-      aminalAgeId: DataTypes.INTEGER,
-      isVaccinated: DataTypes.BOOLEAN,
-      isNeutered: DataTypes.BOOLEAN,
-      organizationId: DataTypes.INTEGER,
-      isAdopting: DataTypes.BOOLEAN,
+      furkidId: DataTypes.INTEGER,
+      name: DataTypes.STRING,
+      age: DataTypes.INTEGER,
+      phone: DataTypes.STRING,
+      email: DataTypes.STRING,
+      city: DataTypes.STRING,
+      address: DataTypes.STRING,
+      occupation: DataTypes.STRING,
+      income: DataTypes.STRING,
+      houseType: DataTypes.STRING,
+      livingArea: DataTypes.STRING,
+      familyNumber: DataTypes.INTEGER,
+      isAgree: DataTypes.BOOLEAN,
+      isAllergic: DataTypes.BOOLEAN,
+      hasPet: DataTypes.BOOLEAN,
+      hasExperienced: DataTypes.BOOLEAN,
+      hasSkills: DataTypes.BOOLEAN,
+      acceptTraining: DataTypes.BOOLEAN,
+      aloneHour: DataTypes.INTEGER,
+      reason: DataTypes.TEXT,
     },
     {
       modelName: "Adoption",
@@ -22,23 +32,8 @@ module.exports = (sequelize, DataTypes) => {
   );
   Adoption.associate = function (models) {
     // associations can be defined here
-    Volunteer.belongsTo(models.Organization, {
-      foreignKey: "organizationId",
-    });
-    Adoption.belongsTo(models.Adopter, {
-      foreignKey: "adpotionId",
-    });
-    Adoption.belongsTo(models.AnimalAge, {
-      foreignKey: "aminalAgeId",
-    });
-    Adoption.belongsTo(models.AnimalBreeds, {
-      foreignKey: "aminalBreedId",
-    });
-    Adoption.belongsTo(models.AnimalGender, {
-      foreignKey: "aminalGenderId",
-    });
-    Adoption.belongsTo(models.AnimalSize, {
-      foreignKey: "aminalSizeId",
+    Adoption.belongsTo(models.Furkid, {
+      foreignKey: "furkidId",
     });
   };
   return Adoption;
