@@ -11,6 +11,7 @@ module.exports = (sequelize, DataTypes) => {
       partnerId: DataTypes.INTEGER,
       isNeutured: DataTypes.BOOLEAN,
       isVaccinated: DataTypes.BOOLEAN,
+      image: DataTypes.STRING,
     },
     {
       modelName: "Furkid",
