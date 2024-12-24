@@ -3,7 +3,7 @@ module.exports = (sequelize, DataTypes) => {
   const FindSupply = sequelize.define(
     "FindSupply",
     {
-      partnerId: DataTypes.INTEGER,
+      userId: DataTypes.INTEGER,
       supplyName: DataTypes.STRING,
       number: DataTypes.INTEGER,
       introduction: DataTypes.TEXT,
@@ -16,8 +16,8 @@ module.exports = (sequelize, DataTypes) => {
   );
   FindSupply.associate = function (models) {
     // associations can be defined here
-    FindSupply.belongsTo(models.Partner, {
-      foreignKey: "partnerId",
+    FindSupply.belongsTo(models.User, {
+      foreignKey: "userId",
     });
   };
   return FindSupply;

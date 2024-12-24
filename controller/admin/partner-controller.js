@@ -1,12 +1,111 @@
-const { Partner } = require("../../models");
-const { weekday_datas } = require("../../datas/weekday-datas");
+const { User } = require("../../models");
+const bcrypt = require("bcryptjs");
 const validator = require("validator");
 
 const adminPartnerController = {
+  getUser: async (req, res, next) => {
+    try {
+      const userId = req.user.id;
+      const response = await User.findByPk(userId, {
+        raw: true,
+      });
+
+      const user = {
+        id: response.id,
+        name: response.name,
+        account: response.account,
+        email: response.email,
+        isAdmin: response.isAdmin,
+      };
+
+      return res.status(200).json({
+        success: false,
+        data: user,
+      });
+    } catch (error) {
+      console.log(error);
+    }
+  },
+  createPartner: async (req, res, next) => {
+    try {
+      const userId = req.user.id;
+      const user = await User.findByPk(userId);
+      // 只有 ADMIN 可以新增使用者
+      if (!user.is_admin) {
+        return res.status(401).json({
+          success: false,
+          message: "Permission denied!",
+        });
+      }
+      const {
+        name,
+        account,
+        email,
+        phone,
+        address,
+        password,
+        weekStart,
+        weekEnd,
+        openingTime,
+        closingTime,
+      } = req.body;
+
+      if (!name || !email || !account || !password) {
+        return res.status(400).json({
+          success: false,
+          message: "Name, account, email and password is required",
+        });
+      }
+
+      if (!validator.isEmail(email)) {
+        return res.status(400).json({
+          success: false,
+          message: "Invalid email.",
+        });
+      }
+
+      if (weekStart > weekEnd) {
+        return res.status(400).json({
+          success: false,
+          message: "Invalid time: weekStart cannot exceed weekEnd",
+        });
+      }
+      if (openingTime >= closingTime) {
+        return res.status(400).json({
+          success: false,
+          message: "Invalid time: openingTime cannot exceed closingTime",
+        });
+      }
+
+      const hash = await bcrypt(password, 10);
+
+      const new_user = await User.create({
+        name,
+        account,
+        email,
+        phone,
+        address,
+        password: hash,
+        weekStart,
+        weekEnd,
+        openingTime,
+        closingTime,
+      });
+      return res.status(201).json({
+        success: false,
+        data: new_user,
+      });
+    } catch (error) {
+      console.log(error);
+    }
+  },
   getPartners: async (req, res, next) => {
     try {
-      const partners = await Partner.findAll({
+      const partners = await User.findAll({
         raw: true,
+        where: {
+          is_admin: false,
+        },
       });
 
       return res.status(200).json({
@@ -17,96 +116,75 @@ const adminPartnerController = {
       console.log(error);
     }
   },
-  getPartner: async (req, res, next) => {
-    try {
-      const { partnerId } = req.params;
-      const partner = await Partner.findByPk(partnerId, {
-        raw: true,
-      });
 
-      if (!partner)
-        return res.status(404).json({
-          success: false,
-          message: "Partner no found",
-        });
-
-      return res.status(200).json({
-        success: false,
-        data: partner,
-      });
-    } catch (error) {
-      console.log(error);
-    }
-  },
   createPartner: async (req, res, next) => {
     try {
+      const userId = req.user.id;
+      const user = await User.findByPk(userId);
+      // 只有 ADMIN 可以新增使用者
+      if (!user.is_admin) {
+        return res.status(401).json({
+          success: false,
+          message: "Permission denied!",
+        });
+      }
       const {
         name,
+        account,
         email,
+        phone,
+        address,
+        password,
         weekStart,
         weekEnd,
         openingTime,
         closingTime,
-        city,
-        address,
       } = req.body;
 
-      if (
-        !name ||
-        !email ||
-        !weekStart ||
-        !weekEnd ||
-        !openingTime ||
-        !closingTime ||
-        !city ||
-        !address
-      )
-        return res.status(401).json({
+      if (!name || !email || !account || !password) {
+        return res.status(400).json({
           success: false,
-          message: "Input cannot be blank",
-        });
-
-      if (!validator.isEmail(email))
-        return res.status(401).json({
-          success: false,
-          message: "Email invalid",
-        });
-
-      const week_start_value = weekday_datas.find(
-        (week) => week.label === weekStart
-      ).value;
-      const week_end_value = weekday_datas.find(
-        (week) => week.label === weekEnd
-      ).value;
-
-      if (week_start_value > week_end_value)
-        return res.status(401).json({
-          success: false,
-          message: "WeekStart cannot be former than WeekEnd",
-        });
-
-      let opening = new Date(openingTime);
-      let closing = new Date(closingTime);
-      if (opening > closing) {
-        return res.status(401).json({
-          success: false,
-          message: "OpeningTime cannot be former than closingTime",
+          message: "Name, account, email and password is required",
         });
       }
 
-      const new_partner = await Partner.create({
+      if (!validator.isEmail(email)) {
+        return res.status(400).json({
+          success: false,
+          message: "Invalid email.",
+        });
+      }
+
+      if (weekStart > weekEnd) {
+        return res.status(400).json({
+          success: false,
+          message: "Invalid time: weekStart cannot exceed weekEnd",
+        });
+      }
+      if (openingTime >= closingTime) {
+        return res.status(400).json({
+          success: false,
+          message: "Invalid time: openingTime cannot exceed closingTime",
+        });
+      }
+
+      const hash = await bcrypt(password, 10);
+
+      const new_user = await User.create({
         name,
+        account,
         email,
+        phone,
+        address,
+        password: hash,
         weekStart,
         weekEnd,
         openingTime,
         closingTime,
-        city,
-        address,
       });
       return res.status(201).json({
         success: false,
-        data: new_partner,
+        data: new_user,
       });
     } catch (error) {
       console.log(error);
@@ -114,40 +192,82 @@ const adminPartnerController = {
   },
   updatePartner: async (req, res, next) => {
     try {
+      const userId = req.user.id;
+      const user = await User.findByPk(userId);
       const { partnerId } = req.params;
+
+      if (userId !== partnerId && !user.is_admin) {
+        return res.status(401).json({
+          success: false,
+          message: "Permission denied!",
+        });
+      }
+
       const {
         name,
+        account,
         email,
+        phone,
+        address,
+        password,
         weekStart,
         weekEnd,
         openingTime,
         closingTime,
-        city,
-        address,
       } = req.body;
-      const partner = await Partner.findByPk(partnerId);
+
+      const partner = await User.findByPk(userId, {
+        raw: true,
+      });
       if (!partner)
         return res.status(404).json({
           success: false,
           message: "Partner no found",
         });
 
-      const partner_data = partner.toJSON();
-      const update_partner = await partner.update({
-        name: name || partner_data.name,
-        email: email || partner_data.email,
-        weekStart: weekStart || partner_data.weekStart,
-        weekEnd: weekEnd || partner_data.weekEnd,
-        openingTime: openingTime || partner_data.openingTime,
-        closingTime: closingTime || partner_data.closingTime,
-        city: city || partner_data.city,
-        address: address || partner_data.address,
+      if (!name || !email || !account || !password) {
+        return res.status(400).json({
+          success: false,
+          message: "Name, account, email and password is required",
+        });
+      }
+
+      if (!validator.isEmail(email)) {
+        return res.status(400).json({
+          success: false,
+          message: "Invalid email.",
+        });
+      }
+
+      if (weekStart > weekEnd) {
+        return res.status(400).json({
+          success: false,
+          message: "Invalid time: weekStart cannot exceed weekEnd",
+        });
+      }
+      if (openingTime >= closingTime) {
+        return res.status(400).json({
+          success: false,
+          message: "Invalid time: openingTime cannot exceed closingTime",
+        });
+      }
+
+      const updatedPartner = await partner.update({
+        name: name || partner.name,
+        account: account || partner.account,
+        email: email || partner.email,
+        phone: phone || partner.phone,
+        address: address || partner.address,
+        password: password ? await bcrypt.hash(password, 10) : partner.password,
+        weekStart: weekStart || partner.weekStart,
+        weekEnd: weekEnd || partner.weekEnd,
+        openingTime: openingTime || partner.openingTime,
+        closingTime: closingTime || partner.closingTime,
       });
 
       return res.status(200).json({
         success: true,
-        message: "Partner updated successfully",
-        data: update_partner,
+        data: updatedPartner,
       });
     } catch (error) {
       console.log(error);
@@ -155,8 +275,20 @@ const adminPartnerController = {
   },
   deletePartner: async (req, res, next) => {
     try {
+      const userId = req.user.id;
       const { partnerId } = req.params;
-      const partner = await Partner.findByPk(partnerId);
+      // const partner = await User.findByPk(partnerId);
+      const [user, partner] = await Promise.all([
+        User.findByPk(userId),
+        User.findByPk(partnerId),
+      ]);
+
+      if (!user.is_admin) {
+        return res.status(401).json({
+          success: false,
+          message: "Permission denied!",
+        });
+      }
 
       if (!partner)
         return res.status(404).json({

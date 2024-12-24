@@ -1,24 +1,30 @@
-const { FindSupply, Partner } = require("../models");
+const { FindSupply, User } = require("../models");
 
 const supplyController = {
   getSupplies: async (req, res, next) => {
     try {
-      const supplies = await FindSupply.findAll({
+      const { userId } = req.query;
+      const response = await FindSupply.findAll({
         nest: true,
         raw: true,
-        include: [Partner],
+        include: [User],
+        where: {
+          ...(userId ? { userId } : {}),
+        },
       });
-      let supply_datas = supplies.map((supply) => ({
+      let supplies = response.map((supply) => ({
         ...supply,
-        partnerName: supply.Partner.name,
-        partnerPhone: supply.Partner.phone,
-        partnerAddress: supply.Partner.city + supply.Partner.address,
-        Partner: undefined,
+        partner: {
+          name: supply.User.name,
+          phone: supply.User.phone,
+          address: supply.User.address,
+        },
+        User: undefined,
       }));
 
       return res.status(200).json({
-        success: false,
-        data: supply_datas,
+        success: true,
+        data: supplies,
       });
     } catch (error) {
       console.log(error);
@@ -28,22 +34,25 @@ const supplyController = {
     try {
       const { supplyId } = req.params;
 
-      const supply = await FindSupply.findByPk(supplyId, {
+      const response = await FindSupply.findByPk(supplyId, {
         nest: true,
         raw: true,
-        include: [Partner],
+        include: [User],
       });
 
-      let supply_data = {
-        ...supply,
-        partnerName: supply.Partner.name,
-        partnerPhone: supply.Partner.phone,
-        partnerAddress: supply.Partner.city + supply.Partner.address,
-        Partner: undefined,
+      let supply = {
+        ...response,
+        partner: {
+          name: response.User.name,
+          phone: response.User.phone,
+          email: response.User.email,
+          address: response.User.address,
+        },
+        User: undefined,
       };
       return res.status(200).json({
-        success: false,
-        data: supply_data,
+        success: true,
+        data: supply,
       });
     } catch (error) {
       console.log(error);

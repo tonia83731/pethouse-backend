@@ -31,7 +31,7 @@ module.exports = {
         defaultValue: "Child",
         type: Sequelize.STRING,
       },
-      partner_id: {
+      user_id: {
         type: Sequelize.INTEGER,
       },
       is_neutured: {

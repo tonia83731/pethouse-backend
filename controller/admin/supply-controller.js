@@ -1,24 +1,26 @@
-const { FindSupply, Partner } = require("../../models");
+const { FindSupply, User } = require("../../models");
 
 const adminSupplyController = {
   getSupplies: async (req, res, next) => {
     try {
-      const supplies = await FindSupply.findAll({
+      const response = await FindSupply.findAll({
         nest: true,
         raw: true,
-        include: [Partner],
+        include: [User],
       });
-      let supply_datas = supplies.map((supply) => ({
+      let supplies = response.map((supply) => ({
         ...supply,
-        partnerName: supply.Partner.name,
-        partnerPhone: supply.Partner.phone,
-        partnerAddress: supply.Partner.city + supply.Partner.address,
-        Partner: undefined,
+        partner: {
+          name: supply.User.name,
+          phone: supply.User.phone,
+          address: supply.User.address,
+        },
+        User: undefined,
       }));
 
       return res.status(200).json({
         success: false,
-        data: supply_datas,
+        data: supplies,
       });
     } catch (error) {
       console.log(error);
@@ -28,28 +30,30 @@ const adminSupplyController = {
     try {
       const { supplyId } = req.params;
 
-      const supply = await FindSupply.findByPk(supplyId, {
+      const response = await FindSupply.findByPk(supplyId, {
         nest: true,
         raw: true,
-        include: [Partner],
+        include: [User],
       });
 
-      if (!supply)
+      if (!response)
         return res.status(404).json({
           success: false,
           message: "Supply no found",
         });
 
-      let supply_data = {
-        ...supply,
-        partnerName: supply.Partner.name,
-        partnerPhone: supply.Partner.phone,
-        partnerAddress: supply.Partner.city + supply.Partner.address,
-        Partner: undefined,
+      let supply = {
+        ...response,
+        partner: {
+          name: response.User.name,
+          phone: response.User.phone,
+          address: response.User.address,
+        },
+        User: undefined,
       };
       return res.status(200).json({
         success: false,
-        data: supply_data,
+        data: supply,
       });
     } catch (error) {
       console.log(error);
@@ -57,12 +61,12 @@ const adminSupplyController = {
   },
   createSupply: async (req, res, next) => {
     try {
-      const { partnerId, supplyName, number, introduction } = req.body;
+      const { userId, supplyName, number, introduction } = req.body;
 
-      if (!partnerId)
+      if (!userId)
         return res.status(401).json({
           success: false,
-          message: "PartnerId cannot be blank",
+          message: "UserId cannot be blank",
         });
 
       if (!supplyName)
@@ -77,7 +81,7 @@ const adminSupplyController = {
         });
 
       const new_supply = await FindSupply.create({
-        partnerId,
+        userId,
         supplyName,
         number,
         introduction,
@@ -94,7 +98,7 @@ const adminSupplyController = {
   updateSupply: async (req, res, next) => {
     try {
       const { supplyId } = req.params;
-      const { partnerId, supplyName, number, introduction } = req.body;
+      const { userId, supplyName, number, introduction } = req.body;
 
       const supply = await FindSupply.findByPk(supplyId);
       if (!supply)
@@ -104,7 +108,7 @@ const adminSupplyController = {
         });
 
       const update_supply = await supply.update({
-        partnerId: partnerId || supply.partnerId,
+        userId: userId || supply.userId,
         supplyName: supplyName || supply.supplyName,
         number: number || supply.number,
         introduction: introduction || supply.introduction,
@@ -128,11 +132,12 @@ const adminSupplyController = {
           success: false,
           message: "Supply no found",
         });
+
+      await supply.destroy();
       return res.status(200).json({
         success: true,
         message: "Supply deleted",
       });
-      await supply.destroy();
     } catch (error) {
       console.log(error);
     }

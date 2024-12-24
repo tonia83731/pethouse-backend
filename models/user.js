@@ -7,6 +7,13 @@ module.exports = (sequelize, DataTypes) => {
       account: DataTypes.STRING,
       email: DataTypes.STRING,
       password: DataTypes.STRING,
+      phone: DataTypes.STRING,
+      address: DataTypes.STRING,
+      isAdmin: DataTypes.BOOLEAN,
+      weekStart: DataTypes.INTEGER,
+      weekEnd: DataTypes.INTEGER,
+      openingTime: DataTypes.INTEGER,
+      closingTime: DataTypes.INTEGER,
     },
     {
       modelName: "User",
@@ -15,7 +22,15 @@ module.exports = (sequelize, DataTypes) => {
     }
   );
   User.associate = function (models) {
-    // associations can be defined here
+    User.hasMany(models.Furkid, {
+      foreignKey: "userId",
+    });
+    User.hasMany(models.FindSupply, {
+      foreignKey: "userId",
+    });
+    User.hasMany(models.FindVolunteer, {
+      foreignKey: "userId",
+    });
   };
   return User;
 };

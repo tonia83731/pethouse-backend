@@ -1,25 +1,48 @@
-const { Furkid, Partner } = require("../models");
+const { Furkid, User } = require("../models");
 
 const furkidController = {
   getFurkids: async (req, res, next) => {
     try {
-      const furkids = await Furkid.findAll({
+      const { page = "1", userId, animal } = req.query;
+      const limit = 12;
+      const offset = (parseInt(page, 10) - 1) * limit;
+
+      const where = {
+        ...(userId ? { userId } : {}),
+        ...(animal ? { animal } : {}),
+      };
+      const response = await Furkid.findAndCountAll({
         nest: true,
         raw: true,
-        include: [Partner],
+        include: [User],
+        where,
+        limit,
+        offset,
       });
 
-      let furkid_datas = furkids.map((furkid) => ({
+      let furkids = response.rows.map((furkid) => ({
         ...furkid,
-        partnerName: furkid.Partner.name,
-        partnerPhone: furkid.Partner.phone,
-        partnerAddress: furkid.Partner.city + furkid.Partner.address,
-        Partner: undefined,
+        partner: {
+          name: furkid.User.name,
+          phone: furkid.User.phone,
+          address: furkid.User.address,
+        },
+        User: undefined,
       }));
 
+      const totalPages = Math.ceil(response.count / limit);
+
       return res.status(200).json({
-        success: false,
-        data: furkid_datas,
+        success: true,
+        data: {
+          furkids,
+          pagination: {
+            currentPage: parseInt(page, 10),
+            totalPages,
+            // totalItems: furkids.count,
+            itemsPerPage: limit,
+          },
+        },
       });
     } catch (error) {
       console.log(error);
@@ -28,23 +51,25 @@ const furkidController = {
   getFurkid: async (req, res, next) => {
     try {
       const { furkidId } = req.params;
-      const furkid = await Furkid.findByPk(furkidId, {
+      const response = await Furkid.findByPk(furkidId, {
         nest: true,
         raw: true,
-        include: [Partner],
+        include: [User],
       });
 
-      let furkid_data = {
-        ...furkid,
-        partnerName: furkid.Partner.name,
-        partnerPhone: furkid.Partner.phone,
-        partnerAddress: furkid.Partner.city + furkid.Partner.address,
-        Partner: undefined,
+      let furkid = {
+        ...response,
+        partner: {
+          name: response.User.name,
+          phone: response.User.phone,
+          address: response.User.address,
+        },
+        User: undefined,
       };
 
       return res.status(200).json({
-        success: false,
-        data: furkid_data,
+        success: true,
+        data: furkid,
       });
     } catch (error) {
       console.log(error);

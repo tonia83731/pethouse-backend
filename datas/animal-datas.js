@@ -1,6 +1,6 @@
 const animalType = ["Dog", "Cat", "Rabbit"];
 
-const animalGender = ["M", "F"];
+const animalGender = ["M", "F", "unknown"];
 
 const animalSize = ["S", "M", "L"];
 

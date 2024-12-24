@@ -1,4 +1,4 @@
-const { Volunteer, FindVolunteer, Partner } = require("../../models");
+const { Volunteer, FindVolunteer, User } = require("../../models");
 
 const adminVolunteerController = {
   getVolunteers: async (req, res, next) => {
@@ -6,15 +6,21 @@ const adminVolunteerController = {
       const volunteers = await FindVolunteer.findAll({
         nest: true,
         raw: true,
-        include: [Partner],
+        include: [User],
+        order: [
+          ["perPerson", "ASC"],
+          ["date", "DESC"],
+        ],
       });
 
       let volunteer_datas = volunteers.map((volunteer) => ({
         ...volunteer,
-        partnerName: volunteer.Partner.name,
-        partnerPhone: volunteer.Partner.phone,
-        partnerAddress: volunteer.Partner.city + volunteer.Partner.address,
-        Partner: undefined,
+        partner: {
+          name: volunteer.User.name,
+          phone: volunteer.User.phone,
+          address: volunteer.User.address,
+        },
+        User: undefined,
       }));
 
       return res.status(200).json({
@@ -28,54 +34,56 @@ const adminVolunteerController = {
   getVolunteer: async (req, res, next) => {
     try {
       const { volunteerId } = req.params;
-      const volunteer = await FindVolunteer.findByPk(volunteerId, {
+      const response = await FindVolunteer.findByPk(volunteerId, {
         nest: true,
-        raw: true,
-        include: [Partner],
+        include: [User, Volunteer],
       });
 
-      if (!volunteer)
+      if (!response)
         return res.status(404).json({
           success: false,
           message: "Volunteer no found",
         });
 
-      let volunteer_data = {
-        ...volunteer,
-        partnerName: volunteer.Partner.name,
-        partnerPhone: volunteer.Partner.phone,
-        partnerAddress: volunteer.Partner.city + volunteer.Partner.address,
-        Partner: undefined,
+      let responseJSON = response.toJSON();
+      let volunteer = {
+        ...responseJSON,
+        partner: {
+          name: responseJSON.User.name,
+          phone: responseJSON.User.phone,
+          address: responseJSON.User.address,
+        },
+        User: undefined,
       };
 
       return res.status(200).json({
         success: false,
-        data: volunteer_data,
+        data: volunteer,
       });
     } catch (error) {
       console.log(error);
     }
   },
-  getVolunteerApplication: async (req, res, next) => {
-    try {
-      const { findVolunteerId } = req.params;
-      const applications = await Volunteer.findAll({
-        raw: true,
-        where: { findVolunteerId },
-      });
+  // getVolunteerApplication: async (req, res, next) => {
+  //   try {
+  //     const { findVolunteerId } = req.params;
+  //     const applications = await Volunteer.findAll({
+  //       raw: true,
+  //       where: { findVolunteerId },
+  //     });
 
-      return res.status(200).json({
-        success: false,
-        data: applications,
-      });
-    } catch (error) {
-      console.log(error);
-    }
-  },
+  //     return res.status(200).json({
+  //       success: false,
+  //       data: applications,
+  //     });
+  //   } catch (error) {
+  //     console.log(error);
+  //   }
+  // },
   createVolunteer: async (req, res, next) => {
     try {
       const {
-        partnerId,
+        userId,
         perPerson,
         weekday,
         startTime,
@@ -84,10 +92,10 @@ const adminVolunteerController = {
         introduction,
       } = req.body;
 
-      if (!partnerId)
+      if (!userId)
         return res.status(401).json({
           success: false,
-          message: "PartnerId cannot be blank",
+          message: "UserId cannot be blank",
         });
 
       if (perPerson < 1)
@@ -96,13 +104,10 @@ const adminVolunteerController = {
           message: "PerPerson should be more than 1",
         });
 
-      let start_time = new Date(startTime);
-      let end_time = new Date(endTime);
-
-      if (end_time > start_time) {
+      if (startTime > endTime) {
         return res.status(401).json({
           success: false,
-          messgae: "End time cannot be former than start time",
+          message: "Invalid time: startTime cannot exceed endTime",
         });
       }
 
@@ -113,7 +118,7 @@ const adminVolunteerController = {
         });
 
       const create_volunteer = await FindVolunteer.create({
-        partnerId,
+        userId,
         perPerson,
         weekday: weekday ? weekday : null,
         startTime,
@@ -134,7 +139,7 @@ const adminVolunteerController = {
     try {
       const { volunteerId } = req.params;
       const {
-        partnerId,
+        userId,
         perPerson,
         weekday,
         startTime,
@@ -150,7 +155,7 @@ const adminVolunteerController = {
         });
 
       const update_volunteer = await volunteer.update({
-        partnerId: partnerId || volunteer.partnerId,
+        userId: userId || volunteer.userId,
         perPerson: perPerson || volunteer.perPerson,
         weekday: weekday || volunteer.weekday,
         startTime: startTime || volunteer.startTime,

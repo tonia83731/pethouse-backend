@@ -3,7 +3,7 @@ const router = express.Router();
 const volunteerController = require("../../controller/volunteer-controller");
 
 router.get("/:volunteerId", volunteerController.getVolunteer);
-router.post("/:findVolunteerId", volunteerController.applyVolunteer);
+router.post("/:findVolunteerId/apply", volunteerController.applyVolunteer);
 router.get("/", volunteerController.getVolunteers);
 
 module.exports = router;

@@ -1,4 +1,4 @@
-const { Adoption } = require("../../models");
+const { Adoption } = require("../models");
 
 const adoptionController = {
   applyAdoption: async (req, res, next) => {

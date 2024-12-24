@@ -1,31 +1,35 @@
-const { Furkid, Partner } = require("../../models");
+const { Furkid, User, Adoption } = require("../../models");
 const {
   animalType,
   animalGender,
   animalSize,
   animalAge,
 } = require("../../datas/animal-datas");
+const { imgurFileHandler } = require("../../helpers/file-helpers");
 
 const adminFurkidController = {
   getFurkids: async (req, res, next) => {
     try {
-      const furkids = await Furkid.findAll({
+      const response = await Furkid.findAll({
         nest: true,
-        raw: true,
-        include: [Partner],
+        include: [User, Adoption],
       });
 
-      let furkid_datas = furkids.map((furkid) => ({
-        ...furkid,
-        partnerName: furkid.Partner.name,
-        partnerPhone: furkid.Partner.phone,
-        partnerAddress: furkid.Partner.city + furkid.Partner.address,
-        Partner: undefined,
+      let furkids = response.map((furkid) => ({
+        ...furkid.toJSON(),
+        partner: {
+          id: furkid.partnerId,
+          name: furkid.User.name,
+        },
+        adoptionNumber: Adoption.length,
+        User: undefined,
+        Adoption: undefined,
+        partnerId: undefined,
       }));
 
       return res.status(200).json({
         success: false,
-        data: furkid_datas,
+        data: furkids,
       });
     } catch (error) {
       console.log(error);
@@ -34,32 +38,36 @@ const adminFurkidController = {
   getFurkid: async (req, res, next) => {
     try {
       const { furkidId } = req.params;
-      const furkid = await Furkid.findByPk(furkidId, {
-        nest: true,
-        raw: true,
-        include: [Partner],
+      const response = await Furkid.findByPk(furkidId, {
+        include: [User, Adoption],
       });
 
-      if (!furkid)
+      if (!response)
         return res.status(404).json({
           success: false,
-          message: "Furkid no found",
+          message: "Furkid not found",
         });
 
-      let furkid_data = {
-        ...furkid,
-        partnerName: furkid.Partner.name,
-        partnerPhone: furkid.Partner.phone,
-        partnerAddress: furkid.Partner.city + furkid.Partner.address,
-        Partner: undefined,
+      const responseJSON = response.toJSON();
+      const furkid = {
+        ...responseJSON,
+        partner: {
+          id: responseJSON.userId,
+          name: responseJSON.User.name,
+        },
+        User: undefined,
       };
 
       return res.status(200).json({
-        success: false,
-        data: furkid_data,
+        success: true,
+        data: furkid,
       });
     } catch (error) {
       console.log(error);
+      return res.status(500).json({
+        success: false,
+        message: "Internal server error",
+      });
     }
   },
   createFurkid: async (req, res, next) => {
@@ -70,10 +78,13 @@ const adminFurkidController = {
         animal,
         size,
         age,
-        partnerId,
+        userId,
         isNeutured,
         isVaccinated,
       } = req.body;
+
+      const { file } = req;
+      const filePath = await imgurFileHandler(file);
 
       if (!name)
         return res.status(401).json({
@@ -101,26 +112,27 @@ const adminFurkidController = {
           success: false,
           message: "Invalid age value",
         });
-      if (!partnerId)
+      if (!userId)
         return res.status(400).json({
           success: false,
-          message: "PartnerId cannot be blank",
+          message: "UserId cannot be blank",
         });
 
-      const new_furkid = await Furkid.create({
+      const furkid = await Furkid.create({
         name,
-        gender: gender ? gender : null,
+        gender,
         animal,
         size,
         age,
-        partnerId,
+        userId,
         isNeutured: isNeutured ? isNeutured : false,
         isVaccinated: isVaccinated ? isVaccinated : false,
+        avatar: filePath | "https://imgur.com/UZ1sYRu",
       });
 
       return res.status(201).json({
         success: true,
-        data: new_furkid,
+        data: furkid,
       });
     } catch (error) {
       console.log(error);
@@ -135,10 +147,24 @@ const adminFurkidController = {
         animal,
         size,
         age,
-        partnerId,
+        userId,
         isNeutured,
         isVaccinated,
       } = req.body;
+      const { file } = req;
+
+      // console.log(
+      //   name,
+      //   gender,
+      //   animal,
+      //   size,
+      //   age,
+      //   userId,
+      //   isNeutured,
+      //   isVaccinated,
+      //   file
+      // );
+
       const furkid = await Furkid.findByPk(furkidId);
 
       if (!furkid)
@@ -177,26 +203,26 @@ const adminFurkidController = {
           message: "Invalid age value",
         });
       }
-      if (partnerId === "") {
+      if (!userId) {
         return res.status(400).json({
           success: false,
-          message: "PartnerId cannot be blank",
+          message: "UserId cannot be blank",
         });
       }
-
+      const filePath = file ? await imgurFileHandler(file) : furkid.avatar;
       const updated_furkid = await furkid.update({
         name: name || furkid.name,
         gender: gender || furkid.gender,
         animal: animal || furkid.animal,
         size: size || furkid.size,
         age: age || furkid.age,
-        partnerId: partnerId || furkid.partnerId,
+        userId: userId || furkid.userId,
         isNeutured: isNeutured || furkid.isNeutured,
         isVaccinated: isVaccinated || furkid.isVaccinated,
+        avatar: filePath,
       });
       return res.status(200).json({
         success: true,
-        message: "Furkid update successfully",
         data: updated_furkid,
       });
     } catch (error) {

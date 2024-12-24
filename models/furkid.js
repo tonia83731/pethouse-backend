@@ -8,10 +8,10 @@ module.exports = (sequelize, DataTypes) => {
       animal: DataTypes.STRING,
       size: DataTypes.STRING,
       age: DataTypes.STRING,
-      partnerId: DataTypes.INTEGER,
+      userId: DataTypes.INTEGER,
       isNeutured: DataTypes.BOOLEAN,
       isVaccinated: DataTypes.BOOLEAN,
-      image: DataTypes.STRING,
+      avatar: DataTypes.STRING,
     },
     {
       modelName: "Furkid",
@@ -21,9 +21,10 @@ module.exports = (sequelize, DataTypes) => {
   );
   Furkid.associate = function (models) {
     // associations can be defined here
-    Furkid.belongsTo(models.Partner, {
-      foreignKey: "partnerId",
+    Furkid.belongsTo(models.User, {
+      foreignKey: "userId",
     });
+    Furkid.hasMany(models.Adoption, { foreignKey: "furkidId" });
   };
   return Furkid;
 };

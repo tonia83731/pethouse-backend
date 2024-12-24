@@ -3,11 +3,11 @@ module.exports = (sequelize, DataTypes) => {
   const FindVolunteer = sequelize.define(
     "FindVolunteer",
     {
-      partnerId: DataTypes.INTEGER,
+      userId: DataTypes.INTEGER,
       perPerson: DataTypes.INTEGER,
-      weekday: DataTypes.STRING,
-      startTime: DataTypes.TIME,
-      endTime: DataTypes.TIME,
+      weekday: DataTypes.INTEGER,
+      startTime: DataTypes.INTEGER,
+      endTime: DataTypes.INTEGER,
       minHour: DataTypes.INTEGER,
       introduction: DataTypes.TEXT,
     },
@@ -22,8 +22,8 @@ module.exports = (sequelize, DataTypes) => {
     FindVolunteer.hasMany(models.Volunteer, {
       foreignKey: "findVolunteerId",
     });
-    FindVolunteer.belongsTo(models.Partner, {
-      foreignKey: "partnerId",
+    FindVolunteer.belongsTo(models.User, {
+      foreignKey: "userId",
     });
   };
   return FindVolunteer;

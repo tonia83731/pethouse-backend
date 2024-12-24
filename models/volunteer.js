@@ -8,6 +8,7 @@ module.exports = (sequelize, DataTypes) => {
       phone: DataTypes.STRING,
       email: DataTypes.STRING,
       date: DataTypes.DATE,
+      startTime: DataTypes.INTEGER,
       hours: DataTypes.INTEGER,
       needProven: DataTypes.BOOLEAN,
     },

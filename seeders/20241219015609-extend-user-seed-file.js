@@ -1,0 +1,82 @@
+"use strict";
+const bcrypt = require("bcryptjs");
+module.exports = {
+  up: async (queryInterface, Sequelize) => {
+    await queryInterface.bulkInsert("Users", [
+      {
+        name: "毛孩不哭 台北總店",
+        account: "taipei.xinyi",
+        email: "taipei.xinyi@maohai.com",
+        password: await bcrypt.hash("xinyi123", 10),
+        phone: "0945678901",
+        week_start: 1,
+        week_end: 7,
+        opening_time: 720,
+        closing_time: 1320,
+        address: "台北市信義區忠孝東路五段",
+        created_at: new Date(),
+        updated_at: new Date(),
+      },
+      {
+        name: "毛孩不哭 台北東區店",
+        account: "taipei.dongqu",
+        email: "taipei.dongqu@maohai.com",
+        password: await bcrypt.hash("dongqu123", 10),
+        phone: "0956789012",
+        week_start: 3,
+        week_end: 7,
+        opening_time: 720,
+        closing_time: 1320,
+        address: "台北市大安區光復南路2段",
+        created_at: new Date(),
+        updated_at: new Date(),
+      },
+      {
+        name: "毛孩不哭 高雄夢時代店",
+        account: "kaohsiung.dream",
+        email: "kaohsiung.dream@maohai.com",
+        password: await bcrypt.hash("dream123", 10),
+        phone: "0923456789",
+        week_start: 2,
+        week_end: 7,
+        opening_time: 660,
+        closing_time: 1380,
+        address: "高雄市前鎮區中華五路2段夢時代購物中心",
+        created_at: new Date(),
+        updated_at: new Date(),
+      },
+      {
+        name: "毛孩不哭 台中大遠百店",
+        account: "taichung.forever21",
+        email: "taichung.forever21@maohai.com",
+        password: await bcrypt.hash("forever123", 10),
+        phone: "0934567890",
+        week_start: 0,
+        week_end: 6,
+        opening_time: 720,
+        closing_time: 1260,
+        address: "台中市西區建國北路二段大遠百購物中心",
+        created_at: new Date(),
+        updated_at: new Date(),
+      },
+      {
+        name: "毛孩不哭 台南遠東店",
+        account: "tainan.farEast",
+        email: "tainan.farEast@maohai.com",
+        password: await bcrypt.hash("farEast", 10),
+        phone: "0967890123",
+        week_start: 1,
+        week_end: 6,
+        opening_time: 660,
+        closing_time: 1320,
+        address: "台南市東區遠東百貨附近",
+        created_at: new Date(),
+        updated_at: new Date(),
+      },
+    ]);
+  },
+
+  down: async (queryInterface, Sequelize) => {
+    await queryInterface.bulkDelete("Users", {});
+  },
+};
