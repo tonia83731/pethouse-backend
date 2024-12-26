@@ -5,7 +5,7 @@ module.exports = (sequelize, DataTypes) => {
     {
       userId: DataTypes.INTEGER,
       perPerson: DataTypes.INTEGER,
-      weekday: DataTypes.INTEGER,
+      date: DataTypes.STRING,
       startTime: DataTypes.INTEGER,
       endTime: DataTypes.INTEGER,
       minHour: DataTypes.INTEGER,

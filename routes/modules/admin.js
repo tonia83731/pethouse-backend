@@ -26,14 +26,9 @@ router.delete(
   "/volunteers/:volunteerId",
   adminVolunteerController.deleteVolunteer
 );
-// router.get(
-//   "/volunteers/:findVolunteerId/application",
-//   adminVolunteerController.getVolunteerApplication
-// );
-// router.get("/partners/:partnerId", adminPartnerController.getPartner);
+router.get("/partners/:userId", adminPartnerController.getPartner);
 router.put("/partners/:partnerId", adminPartnerController.updatePartner);
 router.delete("/partners/:partnerId", adminPartnerController.deletePartner);
-// router.get("/adoptions/:adoptionId", adminAdoptionController.getAdoption);
 router.patch(
   "/adoptions/:adoptionId/status",
   adminAdoptionController.updateAdoptionStatus

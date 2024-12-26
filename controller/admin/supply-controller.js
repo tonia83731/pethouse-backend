@@ -11,9 +11,8 @@ const adminSupplyController = {
       let supplies = response.map((supply) => ({
         ...supply,
         partner: {
+          id: supply.partnerId,
           name: supply.User.name,
-          phone: supply.User.phone,
-          address: supply.User.address,
         },
         User: undefined,
       }));
@@ -45,9 +44,8 @@ const adminSupplyController = {
       let supply = {
         ...response,
         partner: {
+          id: response.User.id,
           name: response.User.name,
-          phone: response.User.phone,
-          address: response.User.address,
         },
         User: undefined,
       };

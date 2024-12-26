@@ -26,86 +26,38 @@ const adminPartnerController = {
       console.log(error);
     }
   },
-  createPartner: async (req, res, next) => {
+  getPartner: async (req, res, next) => {
     try {
-      const userId = req.user.id;
-      const user = await User.findByPk(userId);
-      // 只有 ADMIN 可以新增使用者
-      if (!user.is_admin) {
-        return res.status(401).json({
-          success: false,
-          message: "Permission denied!",
-        });
-      }
-      const {
-        name,
-        account,
-        email,
-        phone,
-        address,
-        password,
-        weekStart,
-        weekEnd,
-        openingTime,
-        closingTime,
-      } = req.body;
-
-      if (!name || !email || !account || !password) {
-        return res.status(400).json({
-          success: false,
-          message: "Name, account, email and password is required",
-        });
-      }
-
-      if (!validator.isEmail(email)) {
-        return res.status(400).json({
-          success: false,
-          message: "Invalid email.",
-        });
-      }
-
-      if (weekStart > weekEnd) {
-        return res.status(400).json({
-          success: false,
-          message: "Invalid time: weekStart cannot exceed weekEnd",
-        });
-      }
-      if (openingTime >= closingTime) {
-        return res.status(400).json({
-          success: false,
-          message: "Invalid time: openingTime cannot exceed closingTime",
-        });
-      }
-
-      const hash = await bcrypt(password, 10);
-
-      const new_user = await User.create({
-        name,
-        account,
-        email,
-        phone,
-        address,
-        password: hash,
-        weekStart,
-        weekEnd,
-        openingTime,
-        closingTime,
+      const { userId } = req.params;
+      const response = await User.findByPk(userId, {
+        raw: true,
       });
-      return res.status(201).json({
-        success: false,
-        data: new_user,
+
+      if (!response) {
+        return res.status(404).json({
+          success: false,
+          message: "Partner no found.",
+        });
+      }
+
+      const partner = {
+        ...response,
+        password: undefined,
+      };
+
+      return res.status(200).json({
+        success: true,
+        data: partner,
       });
     } catch (error) {
       console.log(error);
     }
   },
+
   getPartners: async (req, res, next) => {
     try {
       const partners = await User.findAll({
         raw: true,
-        where: {
-          is_admin: false,
-        },
       });
 
       return res.status(200).json({
@@ -122,7 +74,7 @@ const adminPartnerController = {
       const userId = req.user.id;
       const user = await User.findByPk(userId);
       // 只有 ADMIN 可以新增使用者
-      if (!user.is_admin) {
+      if (!user.isAdmin) {
         return res.status(401).json({
           success: false,
           message: "Permission denied!",
@@ -168,7 +120,7 @@ const adminPartnerController = {
         });
       }
 
-      const hash = await bcrypt(password, 10);
+      const hash = await bcrypt.hash(password, 10);
 
       const new_user = await User.create({
         name,
@@ -193,10 +145,14 @@ const adminPartnerController = {
   updatePartner: async (req, res, next) => {
     try {
       const userId = req.user.id;
-      const user = await User.findByPk(userId);
       const { partnerId } = req.params;
 
-      if (userId !== partnerId && !user.is_admin) {
+      const [user, partner] = await Promise.all([
+        User.findByPk(userId),
+        User.findByPk(partnerId),
+      ]);
+
+      if (!user.isAdmin && userId !== partnerId) {
         return res.status(401).json({
           success: false,
           message: "Permission denied!",
@@ -216,19 +172,16 @@ const adminPartnerController = {
         closingTime,
       } = req.body;
 
-      const partner = await User.findByPk(userId, {
-        raw: true,
-      });
       if (!partner)
         return res.status(404).json({
           success: false,
           message: "Partner no found",
         });
 
-      if (!name || !email || !account || !password) {
+      if (!name || !email || !account) {
         return res.status(400).json({
           success: false,
-          message: "Name, account, email and password is required",
+          message: "Name, account and email is required",
         });
       }
 
@@ -263,6 +216,7 @@ const adminPartnerController = {
         weekEnd: weekEnd || partner.weekEnd,
         openingTime: openingTime || partner.openingTime,
         closingTime: closingTime || partner.closingTime,
+        isAdmin: partner.isAdmin,
       });
 
       return res.status(200).json({
@@ -277,13 +231,12 @@ const adminPartnerController = {
     try {
       const userId = req.user.id;
       const { partnerId } = req.params;
-      // const partner = await User.findByPk(partnerId);
       const [user, partner] = await Promise.all([
         User.findByPk(userId),
         User.findByPk(partnerId),
       ]);
 
-      if (!user.is_admin) {
+      if (!user.isAdmin) {
         return res.status(401).json({
           success: false,
           message: "Permission denied!",

@@ -16,11 +16,13 @@ const adminVolunteerController = {
       let volunteer_datas = volunteers.map((volunteer) => ({
         ...volunteer,
         partner: {
+          id: volunteer.userId,
           name: volunteer.User.name,
-          phone: volunteer.User.phone,
-          address: volunteer.User.address,
+          // phone: volunteer.User.phone,
+          // address: volunteer.User.address,
         },
         User: undefined,
+        userId: undefined,
       }));
 
       return res.status(200).json({
@@ -49,11 +51,13 @@ const adminVolunteerController = {
       let volunteer = {
         ...responseJSON,
         partner: {
+          id: responseJSON.userId,
           name: responseJSON.User.name,
           phone: responseJSON.User.phone,
           address: responseJSON.User.address,
         },
         User: undefined,
+        userId: undefined,
       };
 
       return res.status(200).json({
@@ -85,7 +89,7 @@ const adminVolunteerController = {
       const {
         userId,
         perPerson,
-        weekday,
+        date,
         startTime,
         endTime,
         minHour,
@@ -120,7 +124,7 @@ const adminVolunteerController = {
       const create_volunteer = await FindVolunteer.create({
         userId,
         perPerson,
-        weekday: weekday ? weekday : null,
+        date,
         startTime,
         endTime,
         minHour,
@@ -141,7 +145,7 @@ const adminVolunteerController = {
       const {
         userId,
         perPerson,
-        weekday,
+        date,
         startTime,
         endTime,
         minHour,
@@ -157,7 +161,7 @@ const adminVolunteerController = {
       const update_volunteer = await volunteer.update({
         userId: userId || volunteer.userId,
         perPerson: perPerson || volunteer.perPerson,
-        weekday: weekday || volunteer.weekday,
+        date,
         startTime: startTime || volunteer.startTime,
         endTime: endTime || volunteer.endTime,
         minHour: minHour || volunteer.minHour,
