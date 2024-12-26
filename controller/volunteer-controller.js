@@ -28,7 +28,7 @@ const volunteerController = {
           address: volunteer.User.address,
         },
         time: {
-          weekday: volunteer.weekday,
+          date: volunteer.date,
           startTime: volunteer.startTime,
           endTime: volunteer.endTime,
         },
